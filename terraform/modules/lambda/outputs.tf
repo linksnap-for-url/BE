@@ -17,3 +17,23 @@ output "redirect_invoke_arn" {
   description = "redirect Lambda function invoke ARN"
   value       = aws_lambda_function.redirect.invoke_arn
 }
+
+output "get_url_stats_function_name" {
+  description = "get url stats Lambda function name"
+  value       = aws_lambda_function.get_url_stats.function_name
+}
+
+output "get_url_stats_invoke_arn" {
+  description = "get url stats Lambda function invoke ARN"
+  value       = aws_lambda_function.get_url_stats.invoke_arn
+}
+
+output "get_site_stats_function_name" {
+  description = "get site stats Lambda function name"
+  value       = aws_lambda_function.get_site_stats.function_name
+}
+
+output "get_site_stats_invoke_arn" {
+  description = "get site stats Lambda function invoke ARN"
+  value       = aws_lambda_function.get_site_stats.invoke_arn
+}

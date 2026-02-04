@@ -34,6 +34,10 @@ module "apigateway" {
   create_short_url_function_name = module.lambda.create_short_url_function_name
   redirect_invoke_arn            = module.lambda.redirect_invoke_arn
   redirect_function_name         = module.lambda.redirect_function_name
+  get_url_stats_invoke_arn       = module.lambda.get_url_stats_invoke_arn
+  get_url_stats_function_name    = module.lambda.get_url_stats_function_name
+  get_site_stats_invoke_arn      = module.lambda.get_site_stats_invoke_arn
+  get_site_stats_function_name   = module.lambda.get_site_stats_function_name
 }
 
 

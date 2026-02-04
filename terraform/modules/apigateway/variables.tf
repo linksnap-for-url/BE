@@ -27,3 +27,23 @@ variable "redirect_function_name" {
   description = "redirect lambda function name"
   type        = string
 }
+
+variable "get_url_stats_invoke_arn" {
+  description = "get url stats lambda function invoke ARN"
+  type        = string
+}
+
+variable "get_url_stats_function_name" {
+  description = "get url stats lambda function name"
+  type        = string
+}
+
+variable "get_site_stats_invoke_arn" {
+  description = "get site stats lambda function invoke ARN"
+  type        = string
+}
+
+variable "get_site_stats_function_name" {
+  description = "get site stats lambda function name"
+  type        = string
+}
