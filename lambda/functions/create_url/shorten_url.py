@@ -9,6 +9,19 @@ dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(os.environ.get('URLS_TABLE', 'url-shortener-urls-dev'))
 
 
+def get_base_url(event):
+    """API Gateway 요청에서 BASE_URL 동적 생성"""
+    request_context = event.get('requestContext', {})
+    domain = request_context.get('domainName', '')
+    stage = request_context.get('stage', '')
+    
+    if domain and stage:
+        return f"https://{domain}/{stage}"
+    
+    # 로컬 테스트용 fallback
+    return os.environ.get('BASE_URL', 'http://localhost')
+
+
 def generate_url_id(url):
     """URL + 현재시간 해시해서 6자리 코드 생성"""
     unique_string = f"{url}{time.time()}"
@@ -42,20 +55,25 @@ def handler(event, context):
         # 3. 데이터 생성
         url_id = generate_url_id(original_url)
         now = datetime.utcnow()
-        expires_at = now + timedelta(days=30)  # 30일 후 만료
+        expires_at = now + timedelta(days=30)
         
-        # 4. DynamoDB 저장 (테이블 설계에 맞춤)
+        # 4. 단축 URL 생성 (API Gateway에서 동적으로 URL 추출)
+        base_url = get_base_url(event)
+        short_url = f"{base_url}/{url_id}"
+        
+        # 5. DynamoDB 저장
         table.put_item(
             Item={
-                'urlId': url_id,                          # PK
-                'originalUrl': original_url,              # 원본 URL
-                'createdAt': now.isoformat(),             # 생성 일시 (ISO 8601)
-                'expiresAt': expires_at.isoformat(),      # 만료 시간
-                'clickCount': 0                           # 총 클릭 수
+                'urlId': url_id,
+                'shortUrl': short_url,
+                'originalUrl': original_url,
+                'createdAt': now.isoformat(),
+                'expiresAt': expires_at.isoformat(),
+                'clickCount': 0
             }
         )
         
-        # 5. 응답
+        # 6. 응답 (shortUrl 추가!)
         return {
             'statusCode': 201,
             'headers': {
@@ -64,6 +82,7 @@ def handler(event, context):
             },
             'body': json.dumps({
                 'urlId': url_id,
+                'shortUrl': short_url,  # ← 추가됨!
                 'originalUrl': original_url,
                 'createdAt': now.isoformat(),
                 'expiresAt': expires_at.isoformat()

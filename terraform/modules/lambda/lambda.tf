@@ -2,7 +2,7 @@ resource "aws_lambda_function" "create_short_url" {
   function_name = "${var.project_name}-create-short-url-${var.environment}"
 
   runtime = "python3.10"
-  handler = "main.handler"
+  handler = "shorten_url.handler"
   role   = var.lambda_role_arn
   timeout = 10
 
@@ -21,7 +21,7 @@ resource "aws_lambda_function" "redirect" {
   function_name = "${var.project_name}-redirect-${var.environment}"
 
   runtime = "python3.10"
-  handler = "main.handler"
+  handler = "redirect.handler"
   role   = var.lambda_role_arn
   timeout = 10
 
