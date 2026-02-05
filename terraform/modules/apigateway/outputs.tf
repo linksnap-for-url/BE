@@ -7,3 +7,8 @@ output "api_id" {
   description = "API Gateway ID"
   value       = aws_apigatewayv2_api.main.id
 }
+
+output "stage_id" {
+  description = "API Gateway Stage ID"
+  value       = aws_apigatewayv2_stage.main.id
+}

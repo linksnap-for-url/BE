@@ -67,5 +67,15 @@ module "iam" {
   stats_table_arn = module.dynamodb.stats_table_arn
 }
 
+# Route 53 + 커스텀 도메인 모듈
+module "route53" {
+  source       = "./modules/route53"
+  domain_name  = var.domain_name
+  project_name = var.project_name
+  environment  = var.environment
+  api_id       = module.apigateway.api_id
+  stage_id     = module.apigateway.stage_id
+}
+
 
 

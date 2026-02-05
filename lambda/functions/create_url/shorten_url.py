@@ -15,10 +15,14 @@ def get_base_url(event):
     domain = request_context.get('domainName', '')
     stage = request_context.get('stage', '')
     
-    if domain and stage:
-        return f"https://{domain}/{stage}"
+    if domain:
+        # 커스텀 도메인인 경우 (amazonaws.com이 아님) → stage 제외
+        if 'amazonaws.com' not in domain:
+            return f"https://{domain}"
+        # API Gateway 기본 도메인인 경우 → stage 포함
+        elif stage:
+            return f"https://{domain}/{stage}"
     
-    # 로컬 테스트용 fallback
     return os.environ.get('BASE_URL', 'http://localhost')
 
 

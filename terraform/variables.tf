@@ -15,3 +15,9 @@ variable "project_name" {
   type        = string
   default     = "url-shortener"
 }
+
+variable "domain_name" {
+  description = "커스텀 도메인 이름"
+  type        = string
+  default     = "shmall.store"
+}
