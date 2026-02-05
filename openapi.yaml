@@ -1,0 +1,494 @@
+openapi: 3.0.3
+info:
+  title: LinkSnap API
+  description: |
+    URL 단축 서비스 LinkSnap의 API 명세서입니다.
+    
+    ## 주요 기능
+    - URL 단축 생성
+    - 단축 URL 리다이렉트
+    - URL별 상세 통계
+    - 전체 사이트 통계
+    
+    ## 참고 사항
+    - 생성된 URL은 30일 후 자동 만료됩니다.
+    - 모든 시간은 UTC 기준입니다.
+  version: 1.0.0
+  contact:
+    name: LinkSnap Team
+
+servers:
+  - url: https://{apiId}.execute-api.{region}.amazonaws.com/{stage}
+    description: AWS API Gateway
+    variables:
+      apiId:
+        default: your-api-id
+        description: API Gateway ID
+      region:
+        default: ap-northeast-2
+        description: AWS Region
+      stage:
+        default: dev
+        enum:
+          - dev
+          - prod
+        description: 배포 스테이지
+
+tags:
+  - name: URL
+    description: URL 단축 관련 API
+  - name: Stats
+    description: 통계 관련 API
+
+paths:
+  /shorten:
+    post:
+      tags:
+        - URL
+      summary: URL 단축 생성
+      description: 긴 URL을 짧은 URL로 변환합니다. 생성된 URL은 30일 동안 유효합니다.
+      operationId: createShortUrl
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUrlRequest'
+            examples:
+              basic:
+                summary: 기본 예시
+                value:
+                  url: "https://www.example.com/very/long/path/to/page"
+              withParams:
+                summary: 쿼리 파라미터 포함
+                value:
+                  url: "https://www.example.com/search?q=test&page=1"
+      responses:
+        '201':
+          description: URL 단축 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUrlResponse'
+              example:
+                urlId: "a1b2c3"
+                shortUrl: "https://api-gateway-url.amazonaws.com/dev/a1b2c3"
+                originalUrl: "https://www.example.com/very/long/path/to/page"
+                createdAt: "2026-02-05T12:30:00.000000"
+                expiresAt: "2026-03-07T12:30:00.000000"
+        '400':
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingUrl:
+                  summary: URL 누락
+                  value:
+                    error: "url is required"
+                invalidUrl:
+                  summary: 잘못된 URL 형식
+                  value:
+                    error: "url must start with http:// or https://"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /{shortCode}:
+    get:
+      tags:
+        - URL
+      summary: URL 리다이렉트
+      description: |
+        단축 URL 접속 시 원본 URL로 리다이렉트합니다.
+        
+        ⚠️ **참고**: 이 엔드포인트는 브라우저에서 직접 접속할 때 사용됩니다.
+        프론트엔드에서 API로 직접 호출하지 않습니다.
+        
+        클릭 시 자동으로 통계가 기록됩니다.
+      operationId: redirectUrl
+      parameters:
+        - $ref: '#/components/parameters/ShortCode'
+      responses:
+        '301':
+          description: 원본 URL로 리다이렉트
+          headers:
+            Location:
+              description: 원본 URL
+              schema:
+                type: string
+                format: uri
+                example: "https://www.example.com/original-page"
+            Cache-Control:
+              description: 캐시 제어
+              schema:
+                type: string
+                example: "no-cache"
+        '400':
+          description: shortCode 누락
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "shortCode is required"
+        '404':
+          description: URL을 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "URL not found"
+        '410':
+          description: URL 만료됨
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "URL has expired"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /stats:
+    get:
+      tags:
+        - Stats
+      summary: 전체 사이트 통계 조회
+      description: |
+        사이트 전체의 URL 및 클릭 통계를 조회합니다.
+        
+        포함 정보:
+        - 전체 URL 수
+        - 전체/오늘/어제 클릭 수
+        - 인기 URL TOP 10
+        - 최근 등록 URL 10개
+      operationId: getSiteStats
+      responses:
+        '200':
+          description: 통계 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteStatsResponse'
+              example:
+                totalUrls: 1500
+                totalClicks: 50000
+                todayClicks: 500
+                yesterdayClicks: 480
+                popularUrls:
+                  - urlId: "a1b2c3"
+                    shortUrl: "https://api-gateway-url.amazonaws.com/dev/a1b2c3"
+                    originalUrl: "https://www.example.com/popular-page"
+                    clickCount: 1500
+                    createdAt: "2026-01-15T10:00:00.000000"
+                recentUrls:
+                  - urlId: "x9y8z7"
+                    shortUrl: "https://api-gateway-url.amazonaws.com/dev/x9y8z7"
+                    originalUrl: "https://www.example.com/new-page"
+                    clickCount: 10
+                    createdAt: "2026-02-05T14:00:00.000000"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /stats/{shortCode}:
+    get:
+      tags:
+        - Stats
+      summary: URL별 상세 통계 조회
+      description: |
+        특정 단축 URL의 상세 클릭 통계를 조회합니다.
+        
+        포함 정보:
+        - 전체/오늘/어제 클릭 수
+        - 시간대별 클릭 분포 (0-23시)
+        - 일별 클릭 추이 (최근 30일)
+        - 디바이스 분포 (desktop/mobile/tablet)
+        - 유입 경로별 분포
+      operationId: getUrlStats
+      parameters:
+        - $ref: '#/components/parameters/ShortCode'
+      responses:
+        '200':
+          description: 통계 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UrlStatsResponse'
+              example:
+                urlId: "a1b2c3"
+                shortUrl: "https://api-gateway-url.amazonaws.com/dev/a1b2c3"
+                originalUrl: "https://www.example.com/very/long/path/to/page"
+                createdAt: "2026-02-05T12:30:00.000000"
+                stats:
+                  totalClicks: 150
+                  todayClicks: 25
+                  yesterdayClicks: 30
+                  hourlyClicks:
+                    - hour: 0
+                      clicks: 5
+                    - hour: 1
+                      clicks: 3
+                    - hour: 12
+                      clicks: 15
+                    - hour: 23
+                      clicks: 8
+                  dailyClicks:
+                    - date: "2026-02-05"
+                      clicks: 25
+                    - date: "2026-02-04"
+                      clicks: 30
+                    - date: "2026-02-03"
+                      clicks: 28
+                  deviceDistribution:
+                    desktop: 80
+                    mobile: 60
+                    tablet: 10
+                  refererDistribution:
+                    direct: 50
+                    google.com: 40
+                    facebook.com: 30
+                    twitter.com: 20
+        '400':
+          description: shortCode 누락
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "shortCode is required"
+        '404':
+          description: URL을 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "URL not found"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  parameters:
+    ShortCode:
+      name: shortCode
+      in: path
+      required: true
+      description: 단축 URL 코드 (6자리)
+      schema:
+        type: string
+        minLength: 6
+        maxLength: 6
+        example: "a1b2c3"
+
+  schemas:
+    CreateUrlRequest:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: uri
+          description: 단축할 원본 URL (http:// 또는 https://로 시작해야 함)
+          example: "https://www.example.com/very/long/path/to/page"
+
+    CreateUrlResponse:
+      type: object
+      properties:
+        urlId:
+          type: string
+          description: 단축 URL 코드 (6자리)
+          example: "a1b2c3"
+        shortUrl:
+          type: string
+          format: uri
+          description: 완전한 단축 URL
+          example: "https://api-gateway-url.amazonaws.com/dev/a1b2c3"
+        originalUrl:
+          type: string
+          format: uri
+          description: 원본 URL
+          example: "https://www.example.com/very/long/path/to/page"
+        createdAt:
+          type: string
+          format: date-time
+          description: 생성 시간 (ISO 8601, UTC)
+          example: "2026-02-05T12:30:00.000000"
+        expiresAt:
+          type: string
+          format: date-time
+          description: 만료 시간 (생성일 + 30일)
+          example: "2026-03-07T12:30:00.000000"
+
+    UrlInfo:
+      type: object
+      properties:
+        urlId:
+          type: string
+          description: 단축 URL 코드
+          example: "a1b2c3"
+        shortUrl:
+          type: string
+          format: uri
+          description: 완전한 단축 URL
+          example: "https://api-gateway-url.amazonaws.com/dev/a1b2c3"
+        originalUrl:
+          type: string
+          format: uri
+          description: 원본 URL
+          example: "https://www.example.com/page"
+        clickCount:
+          type: integer
+          description: 클릭 수
+          example: 150
+        createdAt:
+          type: string
+          format: date-time
+          description: 생성 시간 (ISO 8601, UTC)
+          example: "2026-02-05T12:30:00.000000"
+
+    SiteStatsResponse:
+      type: object
+      properties:
+        totalUrls:
+          type: integer
+          description: 전체 등록된 URL 수
+          example: 1500
+        totalClicks:
+          type: integer
+          description: 전체 클릭 수
+          example: 50000
+        todayClicks:
+          type: integer
+          description: 오늘 클릭 수
+          example: 500
+        yesterdayClicks:
+          type: integer
+          description: 어제 클릭 수
+          example: 480
+        popularUrls:
+          type: array
+          description: 인기 URL 목록 (클릭수 기준 상위 10개)
+          items:
+            $ref: '#/components/schemas/UrlInfo'
+        recentUrls:
+          type: array
+          description: 최근 등록 URL 목록 (최근 10개)
+          items:
+            $ref: '#/components/schemas/UrlInfo'
+
+    UrlStatsResponse:
+      type: object
+      properties:
+        urlId:
+          type: string
+          description: 단축 URL 코드
+          example: "a1b2c3"
+        shortUrl:
+          type: string
+          format: uri
+          description: 완전한 단축 URL
+          example: "https://api-gateway-url.amazonaws.com/dev/a1b2c3"
+        originalUrl:
+          type: string
+          format: uri
+          description: 원본 URL
+          example: "https://www.example.com/very/long/path/to/page"
+        createdAt:
+          type: string
+          format: date-time
+          description: 생성 시간 (ISO 8601, UTC)
+          example: "2026-02-05T12:30:00.000000"
+        stats:
+          $ref: '#/components/schemas/DetailedStats'
+
+    DetailedStats:
+      type: object
+      properties:
+        totalClicks:
+          type: integer
+          description: 전체 클릭 수
+          example: 150
+        todayClicks:
+          type: integer
+          description: 오늘 클릭 수
+          example: 25
+        yesterdayClicks:
+          type: integer
+          description: 어제 클릭 수
+          example: 30
+        hourlyClicks:
+          type: array
+          description: 시간대별 클릭 (0-23시)
+          items:
+            $ref: '#/components/schemas/HourlyClick'
+        dailyClicks:
+          type: array
+          description: 일별 클릭 (최근 30일, 최신순)
+          items:
+            $ref: '#/components/schemas/DailyClick'
+        deviceDistribution:
+          type: object
+          description: 디바이스별 클릭 분포
+          additionalProperties:
+            type: integer
+          example:
+            desktop: 80
+            mobile: 60
+            tablet: 10
+        refererDistribution:
+          type: object
+          description: 유입 경로별 클릭 분포
+          additionalProperties:
+            type: integer
+          example:
+            direct: 50
+            google.com: 40
+            facebook.com: 30
+
+    HourlyClick:
+      type: object
+      properties:
+        hour:
+          type: integer
+          minimum: 0
+          maximum: 23
+          description: 시간 (0-23)
+          example: 12
+        clicks:
+          type: integer
+          description: 해당 시간대 클릭 수
+          example: 15
+
+    DailyClick:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          description: 날짜 (YYYY-MM-DD)
+          example: "2026-02-05"
+        clicks:
+          type: integer
+          description: 해당 날짜 클릭 수
+          example: 25
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: 에러 메시지
+          example: "url is required"
+
+  responses:
+    InternalServerError:
+      description: 서버 에러
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Internal server error"
