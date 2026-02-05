@@ -18,21 +18,10 @@ info:
     name: LinkSnap Team
 
 servers:
-  - url: https://{apiId}.execute-api.{region}.amazonaws.com/{stage}
-    description: AWS API Gateway
-    variables:
-      apiId:
-        default: your-api-id
-        description: API Gateway ID
-      region:
-        default: ap-northeast-2
-        description: AWS Region
-      stage:
-        default: dev
-        enum:
-          - dev
-          - prod
-        description: 배포 스테이지
+  - url: https://shmall.store
+    description: Production (커스텀 도메인)
+  - url: https://5a2umug8h7.execute-api.ap-northeast-2.amazonaws.com/dev
+    description: Development (API Gateway 직접)
 
 tags:
   - name: URL

@@ -4,7 +4,7 @@
 
 | 항목 | 값 |
 |------|-----|
-| Base URL | `https://{api-gateway-domain}/{stage}` |
+| **Base URL** | `https://shmall.store` |
 | Protocol | HTTPS |
 | Content-Type | `application/json` |
 
