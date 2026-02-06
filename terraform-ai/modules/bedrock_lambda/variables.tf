@@ -17,3 +17,21 @@ variable "s3_bucket_name" {
   description = "데이터 S3 버킷 이름"
   type        = string
 }
+
+variable "urls_table_name" {
+  description = "URL DynamoDB 테이블 이름"
+  type        = string
+  default     = ""
+}
+
+variable "stats_table_name" {
+  description = "Stats DynamoDB 테이블 이름"
+  type        = string
+  default     = ""
+}
+
+variable "sagemaker_endpoint" {
+  description = "SageMaker Endpoint 이름 (없으면 빈 문자열)"
+  type        = string
+  default     = ""
+}

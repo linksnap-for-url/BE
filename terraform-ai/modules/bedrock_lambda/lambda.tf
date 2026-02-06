@@ -13,13 +13,16 @@ resource "aws_lambda_function" "ai_insights" {
   handler          = "handler.handler"
   source_code_hash = data.archive_file.lambda.output_base64sha256
   runtime          = "python3.11"
-  timeout          = 60  # Bedrock 응답 대기
+  timeout          = 120  # Bedrock 응답 대기 (2분)
   memory_size      = 512
 
   environment {
     variables = {
-      S3_BUCKET     = var.s3_bucket_name
-      BEDROCK_MODEL = "anthropic.claude-3-haiku-20240307-v1:0"  # 비용 효율적인 모델
+      S3_BUCKET          = var.s3_bucket_name
+      BEDROCK_MODEL      = "anthropic.claude-3-haiku-20240307-v1:0"
+      URLS_TABLE         = var.urls_table_name
+      STATS_TABLE        = var.stats_table_name
+      SAGEMAKER_ENDPOINT = var.sagemaker_endpoint
     }
   }
 

@@ -12,3 +12,13 @@ variable "s3_bucket_arn" {
   description = "S3 버킷 ARN"
   type        = string
 }
+
+variable "urls_table_arn" {
+  description = "URL DynamoDB 테이블 ARN"
+  type        = string
+}
+
+variable "stats_table_arn" {
+  description = "Stats DynamoDB 테이블 ARN"
+  type        = string
+}

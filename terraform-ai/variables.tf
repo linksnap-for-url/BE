@@ -15,3 +15,22 @@ variable "project_name" {
   type        = string
   default     = "linksnap-ai"
 }
+
+# SageMaker 옵션
+variable "enable_sagemaker_notebook" {
+  description = "SageMaker 노트북 활성화 (비용 발생)"
+  type        = bool
+  default     = false
+}
+
+variable "deploy_endpoint" {
+  description = "SageMaker Endpoint 배포 (비용 발생)"
+  type        = bool
+  default     = false
+}
+
+variable "model_artifact_path" {
+  description = "학습된 모델 S3 경로 (학습 완료 후 설정)"
+  type        = string
+  default     = ""
+}

@@ -105,7 +105,18 @@ resource "aws_iam_role_policy" "lambda_bedrock" {
         Effect = "Allow"
         Action = [
           "bedrock:InvokeModel",
-          "bedrock:InvokeModelWithResponseStream"
+          "bedrock:InvokeModelWithResponseStream",
+          "bedrock:ListFoundationModels",
+          "bedrock:GetFoundationModel"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "aws-marketplace:ViewSubscriptions",
+          "aws-marketplace:Subscribe",
+          "aws-marketplace:Unsubscribe"
         ]
         Resource = "*"
       }
@@ -131,6 +142,49 @@ resource "aws_iam_role_policy" "lambda_s3" {
           var.s3_bucket_arn,
           "${var.s3_bucket_arn}/*"
         ]
+      }
+    ]
+  })
+}
+
+# DynamoDB 접근 정책 (Lambda용 - 실시간 데이터)
+resource "aws_iam_role_policy" "lambda_dynamodb" {
+  name = "${var.project_name}-lambda-dynamodb-${var.environment}"
+  role = aws_iam_role.lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:Scan",
+          "dynamodb:Query",
+          "dynamodb:GetItem"
+        ]
+        Resource = [
+          var.urls_table_arn,
+          var.stats_table_arn
+        ]
+      }
+    ]
+  })
+}
+
+# SageMaker Endpoint 호출 정책 (Lambda용)
+resource "aws_iam_role_policy" "lambda_sagemaker" {
+  name = "${var.project_name}-lambda-sagemaker-${var.environment}"
+  role = aws_iam_role.lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "sagemaker:InvokeEndpoint"
+        ]
+        Resource = "*"
       }
     ]
   })
