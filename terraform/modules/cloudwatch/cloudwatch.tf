@@ -206,7 +206,7 @@ resource "aws_cloudwatch_metric_alarm" "lambda_throttles" {
 
 # API Gateway 5XX Errors
 resource "aws_cloudwatch_metric_alarm" "api_5xx_errors" {
-  count = var.api_gateway_id != "" ? 1 : 0
+  count = var.enable_api_gateway_alarms ? 1 : 0
 
   alarm_name          = "${var.project_name}-api-5xx-errors-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -235,7 +235,7 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_errors" {
 
 # API Gateway 4XX Errors
 resource "aws_cloudwatch_metric_alarm" "api_4xx_errors" {
-  count = var.api_gateway_id != "" ? 1 : 0
+  count = var.enable_api_gateway_alarms ? 1 : 0
 
   alarm_name          = "${var.project_name}-api-4xx-errors-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -263,7 +263,7 @@ resource "aws_cloudwatch_metric_alarm" "api_4xx_errors" {
 
 # API Gateway Latency
 resource "aws_cloudwatch_metric_alarm" "api_latency" {
-  count = var.api_gateway_id != "" ? 1 : 0
+  count = var.enable_api_gateway_alarms ? 1 : 0
 
   alarm_name          = "${var.project_name}-api-high-latency-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -363,7 +363,59 @@ resource "aws_cloudwatch_dashboard" "main" {
             [for fn in var.lambda_function_names : aws_cloudwatch_metric_alarm.lambda_duration[fn].arn]
           )
         }
-      }]
+      }],
+      # 전체 Lambda 로그 (최근 에러/예외)
+      [{
+        type   = "log"
+        x      = 0
+        y      = 12
+        width  = 24
+        height = 8
+        properties = {
+          title  = "Recent Errors & Exceptions"
+          region = var.aws_region
+          query  = join(" | ", [
+            "SOURCE ${join(" | SOURCE ", [for fn in var.lambda_function_names : "'/aws/lambda/${fn}'"])}",
+            "fields @timestamp, @message, @logStream",
+            "filter @message like /(?i)(error|exception|critical|failed|timeout)/",
+            "sort @timestamp desc",
+            "limit 100"
+          ])
+        }
+      }],
+      # 전체 Lambda 로그 (최신)
+      [{
+        type   = "log"
+        x      = 0
+        y      = 20
+        width  = 24
+        height = 8
+        properties = {
+          title  = "Recent Lambda Logs (All)"
+          region = var.aws_region
+          query  = join(" | ", [
+            "SOURCE ${join(" | SOURCE ", [for fn in var.lambda_function_names : "'/aws/lambda/${fn}'"])}",
+            "fields @timestamp, @message, @logStream",
+            "sort @timestamp desc",
+            "limit 200"
+          ])
+        }
+      }],
+      # Lambda 함수별 로그 테이블
+      [
+        for idx, fn in var.lambda_function_names : {
+          type   = "log"
+          x      = (idx % 2) * 12
+          y      = 28 + (floor(idx / 2) * 6)
+          width  = 12
+          height = 6
+          properties = {
+            title  = "${fn}"
+            region = var.aws_region
+            query  = "SOURCE '/aws/lambda/${fn}' | fields @timestamp, @message | sort @timestamp desc | limit 50"
+          }
+        }
+      ]
     )
   })
 }

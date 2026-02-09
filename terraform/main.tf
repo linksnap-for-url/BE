@@ -104,7 +104,8 @@ module "cloudwatch" {
   alarm_thresholds = var.alarm_thresholds
 
   # API Gateway 모니터링
-  api_gateway_id    = module.apigateway.api_id
-  api_gateway_stage = var.environment
+  enable_api_gateway_alarms = true
+  api_gateway_id            = module.apigateway.api_id
+  api_gateway_stage         = var.environment
 }
 

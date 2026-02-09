@@ -52,6 +52,13 @@ variable "alarm_thresholds" {
   }
 }
 
+# API Gateway 모니터링 활성화 여부
+variable "enable_api_gateway_alarms" {
+  description = "API Gateway 알람 활성화 여부"
+  type        = bool
+  default     = true
+}
+
 # API Gateway ID
 variable "api_gateway_id" {
   description = "API Gateway ID for monitoring"
