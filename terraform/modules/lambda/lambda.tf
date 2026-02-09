@@ -3,7 +3,7 @@ resource "aws_lambda_function" "create_short_url" {
 
   runtime = "python3.10"
   handler = "shorten_url.handler"
-  role   = var.lambda_role_arn
+  role    = var.lambda_role_arn
   timeout = 10
 
   filename         = "${path.module}/builds/create_url.zip"
@@ -22,7 +22,7 @@ resource "aws_lambda_function" "redirect" {
 
   runtime = "python3.10"
   handler = "redirect.handler"
-  role   = var.lambda_role_arn
+  role    = var.lambda_role_arn
   timeout = 10
 
   filename         = "${path.module}/builds/redirect.zip"
@@ -42,7 +42,7 @@ resource "aws_lambda_function" "get_url_stats" {
 
   runtime = "python3.10"
   handler = "get_url_stats.handler"
-  role   = var.lambda_role_arn
+  role    = var.lambda_role_arn
   timeout = 30
 
   filename         = "${path.module}/builds/stats.zip"
@@ -62,7 +62,7 @@ resource "aws_lambda_function" "get_site_stats" {
 
   runtime = "python3.10"
   handler = "get_site_stats.handler"
-  role   = var.lambda_role_arn
+  role    = var.lambda_role_arn
   timeout = 30
 
   filename         = "${path.module}/builds/stats.zip"

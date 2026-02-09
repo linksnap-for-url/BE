@@ -18,8 +18,8 @@ provider "aws" {
 
   default_tags {
     tags = {
-      Project     = "url-shortener"
-      ManagedBy   = "terraform"
+      Project   = "url-shortener"
+      ManagedBy = "terraform"
     }
   }
 }
@@ -77,5 +77,34 @@ module "route53" {
   stage_id     = module.apigateway.stage_id
 }
 
+# CloudWatch 모니터링 + Discord 알람 모듈
+module "cloudwatch" {
+  count  = var.enable_cloudwatch_monitoring && var.discord_webhook_url != "" ? 1 : 0
+  source = "./modules/cloudwatch"
 
+  project_name = var.project_name
+  environment  = var.environment
+  aws_region   = var.aws_region
+
+  # 모니터링할 Lambda 함수 목록
+  lambda_function_names = [
+    module.lambda.create_short_url_function_name,
+    module.lambda.redirect_function_name,
+    module.lambda.get_url_stats_function_name,
+    module.lambda.get_site_stats_function_name
+  ]
+
+  # Discord Webhook URL
+  discord_webhook_url = var.discord_webhook_url
+
+  # 로그 보존 기간
+  log_retention_days = var.log_retention_days
+
+  # 알람 임계값
+  alarm_thresholds = var.alarm_thresholds
+
+  # API Gateway 모니터링
+  api_gateway_id    = module.apigateway.api_id
+  api_gateway_stage = var.environment
+}
 

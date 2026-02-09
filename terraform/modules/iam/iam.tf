@@ -23,8 +23,8 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect   = "Allow"
-      Action   = [
+      Effect = "Allow"
+      Action = [
         "dynamodb:GetItem",
         "dynamodb:PutItem",
         "dynamodb:UpdateItem",
@@ -35,6 +35,25 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
         var.urls_table_arn,
         var.stats_table_arn
       ]
+    }]
+  })
+}
+
+# CloudWatch Logs 권한
+resource "aws_iam_role_policy" "lambda_cloudwatch_logs" {
+  name = "lambda-cloudwatch-logs"
+  role = aws_iam_role.lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ]
+      Resource = "arn:aws:logs:*:*:*"
     }]
   })
 }

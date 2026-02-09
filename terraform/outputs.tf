@@ -22,3 +22,22 @@ output "stats_table_name" {
   description = "DynamoDB stats table name"
   value       = module.dynamodb.stats_table_name
 }
+
+# ============================================
+# CloudWatch & Discord Alert Outputs
+# ============================================
+
+output "cloudwatch_dashboard_url" {
+  description = "CloudWatch Dashboard URL"
+  value       = var.enable_cloudwatch_monitoring && var.discord_webhook_url != "" ? "https://${var.aws_region}.console.aws.amazon.com/cloudwatch/home?region=${var.aws_region}#dashboards:name=${var.project_name}-dashboard-${var.environment}" : "CloudWatch 모니터링이 비활성화되어 있습니다"
+}
+
+output "sns_topic_arn" {
+  description = "CloudWatch 알람 SNS Topic ARN"
+  value       = var.enable_cloudwatch_monitoring && var.discord_webhook_url != "" ? module.cloudwatch[0].sns_topic_arn : null
+}
+
+output "discord_alert_function_name" {
+  description = "Discord Alert Lambda 함수 이름"
+  value       = var.enable_cloudwatch_monitoring && var.discord_webhook_url != "" ? module.cloudwatch[0].discord_alert_function_name : null
+}

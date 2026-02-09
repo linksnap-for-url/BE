@@ -1,0 +1,31 @@
+# ============================================
+# 기본 설정
+# ============================================
+aws_region   = "ap-northeast-2"
+environment  = "dev"
+project_name = "url-shortener"
+domain_name  = "shmall.store"
+
+# ============================================
+# CloudWatch & Discord 알람 설정
+# ============================================
+
+# Discord Webhook URL 설정
+# 1. Discord 서버에서 채널 설정 > 연동 > 웹훅 > 새 웹훅 생성
+# 2. 웹훅 URL 복사 후 아래에 붙여넣기
+discord_webhook_url = "https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN"
+
+# CloudWatch 모니터링 활성화 여부
+enable_cloudwatch_monitoring = true
+
+# 로그 보존 기간 (일)
+log_retention_days = 14
+
+# 알람 임계값 커스터마이징
+alarm_thresholds = {
+  lambda_error_threshold       = 5      # 5분 내 Lambda 에러 횟수
+  lambda_duration_threshold_ms = 5000   # Lambda 실행 시간 임계값 (ms)
+  api_5xx_error_threshold      = 10     # 5분 내 API 5XX 에러 횟수
+  api_4xx_error_threshold      = 50     # 5분 내 API 4XX 에러 횟수
+  api_latency_threshold_ms     = 3000   # API 응답 시간 임계값 (ms)
+}

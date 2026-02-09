@@ -23,7 +23,6 @@
 | [URL 리다이렉트](#2-url-리다이렉트) | GET | `/{shortCode}` | 단축 URL 접속 시 원본 URL로 리다이렉트 |
 | [URL별 통계 조회](#3-url별-통계-조회) | GET | `/stats/{shortCode}` | 특정 단축 URL의 클릭 통계 |
 | [전체 사이트 통계](#4-전체-사이트-통계-조회) | GET | `/stats` | 사이트 전체 통계 (인기 URL, 최근 URL 등) |
-| [AI 마케팅 인사이트](#5-ai-마케팅-인사이트) | POST | `/insights` | AI 기반 트래픽 분석 및 마케팅 제안 |
 
 ---
 
@@ -33,54 +32,54 @@
 
 ### Request
 
-\`\`\`
+```
 POST /shorten
 Content-Type: application/json
-\`\`\`
+```
 
 #### Body
 
 | 필드 | 타입 | 설명 |
 |------|------|------|
-| \`url\` | string  | 단축할 원본 URL (\`http://\` 또는 \`https://\`로 시작해야 함) |
+| `url` | string  | 단축할 원본 URL (`http://` 또는 `https://`로 시작해야 함) |
 
 #### 예시
 
-\`\`\`json
+```json
 {
   "url": "https://www.example.com/very/long/path/to/page"
 }
-\`\`\`
+```
 
 ### Response
 
 #### 성공 (201 Created)
 
-\`\`\`json
+```json
 {
   "urlId": "a1b2c3",
-  "shortUrl": "https://shmall.store/a1b2c3",
+  "shortUrl": "https://api-gateway-url.amazonaws.com/dev/a1b2c3",
   "originalUrl": "https://www.example.com/very/long/path/to/page",
   "createdAt": "2026-02-05T12:30:00.000000",
   "expiresAt": "2026-03-07T12:30:00.000000"
 }
-\`\`\`
+```
 
 | 필드 | 타입 | 설명 |
 |------|------|------|
-| \`urlId\` | string | 단축 URL 코드 (6자리) |
-| \`shortUrl\` | string | 완전한 단축 URL |
-| \`originalUrl\` | string | 원본 URL |
-| \`createdAt\` | string | 생성 시간 (ISO 8601) |
-| \`expiresAt\` | string | 만료 시간 (생성일 + 30일) |
+| `urlId` | string | 단축 URL 코드 (6자리) |
+| `shortUrl` | string | 완전한 단축 URL |
+| `originalUrl` | string | 원본 URL |
+| `createdAt` | string | 생성 시간 (ISO 8601) |
+| `expiresAt` | string | 만료 시간 (생성일 + 30일) |
 
 #### 에러 응답
 
 | Status Code | 에러 메시지 | 설명 |
 |-------------|------------|------|
-| 400 | \`url is required\` | URL이 제공되지 않음 |
-| 400 | \`url must start with http:// or https://\` | 잘못된 URL 형식 |
-| 500 | \`{error message}\` | 서버 에러 |
+| 400 | `url is required` | URL이 제공되지 않음 |
+| 400 | `url must start with http:// or https://` | 잘못된 URL 형식 |
+| 500 | `{error message}` | 서버 에러 |
 
 ---
 
@@ -91,40 +90,40 @@ Content-Type: application/json
 
 ### Request
 
-\`\`\`
+```
 GET /{shortCode}
-\`\`\`
+```
 
 #### Path Parameters
 
 | 파라미터 | 타입 | 설명 |
 |----------|------|------|
-| \`shortCode\` | string  | 단축 URL 코드 (예: \`a1b2c3\`) |
+| `shortCode` | string  | 단축 URL 코드 (예: `a1b2c3`) |
 
 #### 예시
 
-\`\`\`
+```
 GET /a1b2c3
-\`\`\`
+```
 
 ### Response
 
 #### 성공 (301 Moved Permanently)
 
-\`\`\`http
+```http
 HTTP/1.1 301 Moved Permanently
 Location: https://www.example.com/very/long/path/to/page
 Cache-Control: no-cache
-\`\`\`
+```
 
 #### 에러 응답
 
 | Status Code | 에러 메시지 | 설명 |
 |-------------|------------|------|
-| 400 | \`shortCode is required\` | shortCode가 없음 |
-| 404 | \`URL not found\` | 존재하지 않는 단축 URL |
-| 410 | \`URL has expired\` | 만료된 단축 URL |
-| 500 | \`{error message}\` | 서버 에러 |
+| 400 | `shortCode is required` | shortCode가 없음 |
+| 404 | `URL not found` | 존재하지 않는 단축 URL |
+| 410 | `URL has expired` | 만료된 단축 URL |
+| 500 | `{error message}` | 서버 에러 |
 
 ---
 
@@ -134,30 +133,30 @@ Cache-Control: no-cache
 
 ### Request
 
-\`\`\`
+```
 GET /stats/{shortCode}
-\`\`\`
+```
 
 #### Path Parameters
 
 | 파라미터 | 타입 | 설명 |
 |----------|------|------|
-| \`shortCode\` | string | 단축 URL 코드 |
+| `shortCode` | string | 단축 URL 코드 |
 
 #### 예시
 
-\`\`\`
+```
 GET /stats/a1b2c3
-\`\`\`
+```
 
 ### Response
 
 #### 성공 (200 OK)
 
-\`\`\`json
+```json
 {
   "urlId": "a1b2c3",
-  "shortUrl": "https://shmall.store/a1b2c3",
+  "shortUrl": "https://api-gateway-url.amazonaws.com/dev/a1b2c3",
   "originalUrl": "https://www.example.com/very/long/path/to/page",
   "createdAt": "2026-02-05T12:30:00.000000",
   "stats": {
@@ -166,11 +165,15 @@ GET /stats/a1b2c3
     "yesterdayClicks": 30,
     "hourlyClicks": [
       { "hour": 0, "clicks": 5 },
-      { "hour": 1, "clicks": 3 }
+      { "hour": 1, "clicks": 3 },
+      { "hour": 2, "clicks": 1 },
+      ...
+      { "hour": 23, "clicks": 8 }
     ],
     "dailyClicks": [
       { "date": "2026-02-05", "clicks": 25 },
-      { "date": "2026-02-04", "clicks": 30 }
+      { "date": "2026-02-04", "clicks": 30 },
+      { "date": "2026-02-03", "clicks": 28 }
     ],
     "deviceDistribution": {
       "desktop": 80,
@@ -180,39 +183,40 @@ GET /stats/a1b2c3
     "refererDistribution": {
       "direct": 50,
       "google.com": 40,
-      "facebook.com": 30
+      "facebook.com": 30,
+      "twitter.com": 20
     }
   }
 }
-\`\`\`
+```
 
 | 필드 | 타입 | 설명 |
 |------|------|------|
-| \`urlId\` | string | 단축 URL 코드 |
-| \`shortUrl\` | string | 완전한 단축 URL |
-| \`originalUrl\` | string | 원본 URL |
-| \`createdAt\` | string | 생성 시간 (ISO 8601) |
-| \`stats\` | object | 통계 데이터 |
+| `urlId` | string | 단축 URL 코드 |
+| `shortUrl` | string | 완전한 단축 URL |
+| `originalUrl` | string | 원본 URL |
+| `createdAt` | string | 생성 시간 (ISO 8601) |
+| `stats` | object | 통계 데이터 |
 
 #### Stats 객체
 
 | 필드 | 타입 | 설명 |
 |------|------|------|
-| \`totalClicks\` | number | 전체 클릭 수 |
-| \`todayClicks\` | number | 오늘 클릭 수 |
-| \`yesterdayClicks\` | number | 어제 클릭 수 |
-| \`hourlyClicks\` | array | 시간대별 클릭 (0-23시) |
-| \`dailyClicks\` | array | 일별 클릭 (최근 30일, 최신순) |
-| \`deviceDistribution\` | object | 디바이스별 클릭 분포 |
-| \`refererDistribution\` | object | 유입 경로별 클릭 분포 |
+| `totalClicks` | number | 전체 클릭 수 |
+| `todayClicks` | number | 오늘 클릭 수 |
+| `yesterdayClicks` | number | 어제 클릭 수 |
+| `hourlyClicks` | array | 시간대별 클릭 (0-23시) |
+| `dailyClicks` | array | 일별 클릭 (최근 30일, 최신순) |
+| `deviceDistribution` | object | 디바이스별 클릭 분포 (`desktop`, `mobile`, `tablet`) |
+| `refererDistribution` | object | 유입 경로별 클릭 분포 |
 
 #### 에러 응답
 
 | Status Code | 에러 메시지 | 설명 |
 |-------------|------------|------|
-| 400 | \`shortCode is required\` | shortCode가 없음 |
-| 404 | \`URL not found\` | 존재하지 않는 단축 URL |
-| 500 | \`{error message}\` | 서버 에러 |
+| 400 | `shortCode is required` | shortCode가 없음 |
+| 404 | `URL not found` | 존재하지 않는 단축 URL |
+| 500 | `{error message}` | 서버 에러 |
 
 ---
 
@@ -222,15 +226,15 @@ GET /stats/a1b2c3
 
 ### Request
 
-\`\`\`
+```
 GET /stats
-\`\`\`
+```
 
 ### Response
 
 #### 성공 (200 OK)
 
-\`\`\`json
+```json
 {
   "totalUrls": 1500,
   "totalClicks": 50000,
@@ -239,7 +243,7 @@ GET /stats
   "popularUrls": [
     {
       "urlId": "a1b2c3",
-      "shortUrl": "https://shmall.store/a1b2c3",
+      "shortUrl": "https://api-gateway-url.amazonaws.com/dev/a1b2c3",
       "originalUrl": "https://www.example.com/popular-page",
       "clickCount": 1500,
       "createdAt": "2026-01-15T10:00:00.000000"
@@ -248,136 +252,39 @@ GET /stats
   "recentUrls": [
     {
       "urlId": "x9y8z7",
-      "shortUrl": "https://shmall.store/x9y8z7",
+      "shortUrl": "https://api-gateway-url.amazonaws.com/dev/x9y8z7",
       "originalUrl": "https://www.example.com/new-page",
       "clickCount": 10,
       "createdAt": "2026-02-05T14:00:00.000000"
     }
   ]
 }
-\`\`\`
+```
 
 | 필드 | 타입 | 설명 |
 |------|------|------|
-| \`totalUrls\` | number | 전체 등록된 URL 수 |
-| \`totalClicks\` | number | 전체 클릭 수 |
-| \`todayClicks\` | number | 오늘 클릭 수 |
-| \`yesterdayClicks\` | number | 어제 클릭 수 |
-| \`popularUrls\` | array | 인기 URL 목록 (상위 10개) |
-| \`recentUrls\` | array | 최근 등록 URL 목록 (최근 10개) |
+| `totalUrls` | number | 전체 등록된 URL 수 |
+| `totalClicks` | number | 전체 클릭 수 |
+| `todayClicks` | number | 오늘 클릭 수 |
+| `yesterdayClicks` | number | 어제 클릭 수 |
+| `popularUrls` | array | 인기 URL 목록 (클릭수 기준 상위 10개) |
+| `recentUrls` | array | 최근 등록 URL 목록 (최근 10개) |
+
+#### Popular/Recent URL 객체
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `urlId` | string | 단축 URL 코드 |
+| `shortUrl` | string | 완전한 단축 URL |
+| `originalUrl` | string | 원본 URL |
+| `clickCount` | number | 클릭 수 |
+| `createdAt` | string | 생성 시간 (ISO 8601) |
 
 #### 에러 응답
 
 | Status Code | 에러 메시지 | 설명 |
 |-------------|------------|------|
-| 500 | \`{error message}\` | 서버 에러 |
-
----
-
-## 5. AI 마케팅 인사이트
-
-AI(Bedrock Claude)를 활용하여 트래픽 데이터 기반 마케팅 분석 및 제안을 받습니다.
-
-### 기본 정보
-
-| 항목 | 값 |
-|------|-----|
-| **Base URL** | \`https://xfcvwvd00j.execute-api.ap-northeast-2.amazonaws.com/dev\` |
-| Protocol | HTTPS |
-| Content-Type | \`application/json\` |
-
-### Request
-
-\`\`\`
-POST /insights
-Content-Type: application/json
-\`\`\`
-
-#### Body
-
-| 필드 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| \`type\` | string | No | 분석 유형: \`full\`, \`traffic\`, \`conversion\` (기본값: \`full\`) |
-
-#### 분석 유형
-
-| 타입 | 설명 |
-|------|------|
-| \`full\` | 종합 분석 (트래픽 패턴 + 채널별 전략 + 액션 아이템) |
-| \`traffic\` | 트래픽 패턴 분석 (시간대별 특징, 피크 타임, 콘텐츠 업데이트 추천) |
-| \`conversion\` | 전환율 분석 (트렌딩 콘텐츠, 유입 채널 최적화, 주간 마케팅 플랜) |
-
-#### 예시
-
-\`\`\`json
-{
-  "type": "full"
-}
-\`\`\`
-
-### Response
-
-#### 성공 (200 OK)
-
-\`\`\`json
-{
-  "analysis_type": "full",
-  "data_summary": {
-    "total_urls": 15,
-    "total_clicks": 230,
-    "top_referers": ["direct", "google.com", "instagram.com"],
-    "top_devices": ["desktop", "mobile", "tablet"]
-  },
-  "ai_insights": "### 현재 성과 요약\n총 15개의 URL이 등록되어 있으며...",
-  "generated_at": "2026-02-06T12:30:00.000000",
-  "data_source": "realtime"
-}
-\`\`\`
-
-| 필드 | 타입 | 설명 |
-|------|------|------|
-| \`analysis_type\` | string | 요청한 분석 유형 |
-| \`data_summary\` | object | 분석에 사용된 데이터 요약 |
-| \`ai_insights\` | string | AI가 생성한 마케팅 인사이트 (마크다운 형식) |
-| \`generated_at\` | string | 분석 생성 시간 (ISO 8601, UTC) |
-| \`data_source\` | string | 데이터 소스 (\`realtime\`: DynamoDB, \`s3\`: S3) |
-
-#### Data Summary 객체
-
-| 필드 | 타입 | 설명 |
-|------|------|------|
-| \`total_urls\` | number | 분석된 총 URL 수 |
-| \`total_clicks\` | number | 분석된 총 클릭 수 |
-| \`top_referers\` | array | 상위 유입 경로 목록 |
-| \`top_devices\` | array | 상위 디바이스 목록 |
-
-#### 에러 응답
-
-| Status Code | 에러 메시지 | 설명 |
-|-------------|------------|------|
-| 500 | \`{error message}\` | 서버 에러 (Bedrock 호출 실패 등) |
-
-### AI 인사이트 내용
-
-#### \`full\` 분석 시 포함 내용
-- 현재 성과 요약
-- 핵심 인사이트 3가지
-- 콘텐츠 업데이트 최적 시간대
-- 채널별 전략 (유입 경로/디바이스별)
-- 이번 주 액션 아이템
-- 주의할 점
-
-#### \`traffic\` 분석 시 포함 내용
-- 트래픽 패턴 분석 (시간대별 특징, 피크 타임)
-- 콘텐츠 업데이트 추천
-- 채널별 마케팅 전략
-- 즉시 실행 가능한 액션 아이템 3가지
-
-#### \`conversion\` 분석 시 포함 내용
-- 트렌딩 콘텐츠 분석
-- 유입 채널 최적화 방안
-- 타겟 오디언스 제안
-- 주간 마케팅 플랜 (월~금)
+| 500 | `{error message}` | 서버 에러 |
 
 ---
 
@@ -385,11 +292,11 @@ Content-Type: application/json
 
 모든 에러 응답은 다음 형식을 따릅니다:
 
-\`\`\`json
+```json
 {
   "error": "에러 메시지"
 }
-\`\`\`
+```
 
 ---
 
@@ -397,8 +304,8 @@ Content-Type: application/json
 
 ### URL 단축 생성
 
-\`\`\`javascript
-const response = await fetch('https://shmall.store/shorten', {
+```javascript
+const response = await fetch('https://your-api-url/dev/shorten', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json'
@@ -410,19 +317,141 @@ const response = await fetch('https://shmall.store/shorten', {
 
 const data = await response.json();
 console.log(data.shortUrl); // 단축된 URL
-\`\`\`
+```
 
 ### 전체 통계 조회
 
-\`\`\`javascript
-const response = await fetch('https://shmall.store/stats');
+```javascript
+const response = await fetch('https://your-api-url/dev/stats');
 const data = await response.json();
-console.log(\`총 \${data.totalUrls}개의 URL, 총 \${data.totalClicks}회 클릭\`);
-\`\`\`
+console.log(`총 ${data.totalUrls}개의 URL, 총 ${data.totalClicks}회 클릭`);
+```
+
+### URL별 통계 조회
+
+```javascript
+const shortCode = 'a1b2c3';
+const response = await fetch(`https://your-api-url/dev/stats/${shortCode}`);
+const data = await response.json();
+console.log(`디바이스 분포:`, data.stats.deviceDistribution);
+```
+
+---
+
+---
+
+## 5. AI 마케팅 인사이트
+
+AI(Bedrock Claude)를 활용하여 트래픽 데이터 기반 마케팅 분석 및 제안을 받습니다.
+
+### 기본 정보
+
+| 항목 | 값 |
+|------|-----|
+| **Base URL** | `https://xfcvwvd00j.execute-api.ap-northeast-2.amazonaws.com/dev` |
+| Protocol | HTTPS |
+| Content-Type | `application/json` |
+
+### Request
+
+```
+POST /insights
+Content-Type: application/json
+```
+
+#### Body
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `type` | string | No | 분석 유형: `full`, `traffic`, `conversion` (기본값: `full`) |
+
+#### 분석 유형
+
+| 타입 | 설명 |
+|------|------|
+| `full` | 종합 분석 (트래픽 패턴 + 채널별 전략 + 액션 아이템) |
+| `traffic` | 트래픽 패턴 분석 (시간대별 특징, 피크 타임, 콘텐츠 업데이트 추천) |
+| `conversion` | 전환율 분석 (트렌딩 콘텐츠, 유입 채널 최적화, 주간 마케팅 플랜) |
+
+#### 예시
+
+```json
+{
+  "type": "full"
+}
+```
+
+### Response
+
+#### 성공 (200 OK)
+
+```json
+{
+  "analysis_type": "full",
+  "data_summary": {
+    "total_urls": 15,
+    "total_clicks": 230,
+    "top_referers": ["direct", "google.com", "instagram.com"],
+    "top_devices": ["desktop", "mobile", "tablet"]
+  },
+  "ai_insights": "### 현재 성과 요약\n총 15개의 URL이 등록되어 있으며, 총 230회의 클릭이 발생했습니다...\n\n### 핵심 인사이트 3가지\n1. 오후 2-4시에 트래픽이 집중됩니다...\n2. 모바일 트래픽이 60%로 데스크톱보다 높습니다...\n3. SNS 유입이 가장 효과적입니다...\n\n### 콘텐츠 업데이트 최적 시간대\n- 오전 10시: 신규 콘텐츠 공개\n- 오후 2시: SNS 공유\n...\n\n### 이번 주 액션 아이템\n1. (즉시 실행) 모바일 최적화 랜딩 페이지 검토\n2. (이번 주 내) Instagram 콘텐츠 전략 수립\n3. (다음 주 준비) A/B 테스트 설계",
+  "generated_at": "2026-02-06T12:30:00.000000",
+  "data_source": "realtime"
+}
+```
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `analysis_type` | string | 요청한 분석 유형 |
+| `data_summary` | object | 분석에 사용된 데이터 요약 |
+| `ai_insights` | string | AI가 생성한 마케팅 인사이트 (마크다운 형식) |
+| `generated_at` | string | 분석 생성 시간 (ISO 8601, UTC) |
+| `data_source` | string | 데이터 소스 (`realtime`: DynamoDB, `s3`: S3 저장 데이터) |
+
+#### Data Summary 객체
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `total_urls` | number | 분석된 총 URL 수 |
+| `total_clicks` | number | 분석된 총 클릭 수 |
+| `top_referers` | array | 상위 유입 경로 목록 |
+| `top_devices` | array | 상위 디바이스 목록 |
+
+#### 에러 응답
+
+| Status Code | 에러 메시지 | 설명 |
+|-------------|------------|------|
+| 500 | `{error message}` | 서버 에러 (Bedrock 호출 실패 등) |
+
+### AI 인사이트 내용
+
+#### `full` 분석 시 포함 내용
+- 현재 성과 요약
+- 핵심 인사이트 3가지
+- 콘텐츠 업데이트 최적 시간대
+- 채널별 전략 (유입 경로/디바이스별)
+- 이번 주 액션 아이템
+- 주의할 점
+
+#### `traffic` 분석 시 포함 내용
+- 트래픽 패턴 분석 (시간대별 특징, 피크 타임)
+- 콘텐츠 업데이트 추천
+- 채널별 마케팅 전략
+- 즉시 실행 가능한 액션 아이템 3가지
+
+#### `conversion` 분석 시 포함 내용
+- 트렌딩 콘텐츠 분석
+- 유입 채널 최적화 방안
+- 타겟 오디언스 제안
+- 주간 마케팅 플랜 (월~금)
+
+---
+
+## 사용 예시 (JavaScript/Fetch)
 
 ### AI 마케팅 인사이트 조회
 
-\`\`\`javascript
+```javascript
 // 종합 분석
 const response = await fetch('https://xfcvwvd00j.execute-api.ap-northeast-2.amazonaws.com/dev/insights', {
   method: 'POST',
@@ -436,7 +465,18 @@ const response = await fetch('https://xfcvwvd00j.execute-api.ap-northeast-2.amaz
 
 const data = await response.json();
 console.log(data.ai_insights); // AI 마케팅 인사이트
-\`\`\`
+
+// 트래픽 분석만
+const trafficResponse = await fetch('https://xfcvwvd00j.execute-api.ap-northeast-2.amazonaws.com/dev/insights', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    type: 'traffic'
+  })
+});
+```
 
 ---
 

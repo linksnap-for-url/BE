@@ -19,9 +19,9 @@ resource "aws_apigatewayv2_stage" "main" {
 
 # Lambda 연결 1: POST /shorten
 resource "aws_apigatewayv2_integration" "create_short_url" {
-  api_id             = aws_apigatewayv2_api.main.id
-  integration_type   = "AWS_PROXY"
-  integration_uri    = var.create_short_url_invoke_arn
+  api_id                 = aws_apigatewayv2_api.main.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = var.create_short_url_invoke_arn
   payload_format_version = "2.0"
 }
 
@@ -33,9 +33,9 @@ resource "aws_apigatewayv2_route" "create_short_url" {
 
 # Lambda 연결 2: GET /{shortCode} (리다이렉트)
 resource "aws_apigatewayv2_integration" "redirect" {
-  api_id             = aws_apigatewayv2_api.main.id
-  integration_type   = "AWS_PROXY"
-  integration_uri    = var.redirect_invoke_arn
+  api_id                 = aws_apigatewayv2_api.main.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = var.redirect_invoke_arn
   payload_format_version = "2.0"
 }
 
@@ -47,9 +47,9 @@ resource "aws_apigatewayv2_route" "redirect" {
 
 # Lambda 연결 3: GET /stats/{shortCode} (URL별 통계)
 resource "aws_apigatewayv2_integration" "get_url_stats" {
-  api_id             = aws_apigatewayv2_api.main.id
-  integration_type   = "AWS_PROXY"
-  integration_uri    = var.get_url_stats_invoke_arn
+  api_id                 = aws_apigatewayv2_api.main.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = var.get_url_stats_invoke_arn
   payload_format_version = "2.0"
 }
 
@@ -61,9 +61,9 @@ resource "aws_apigatewayv2_route" "get_url_stats" {
 
 # Lambda 연결 4: GET /stats (전체 사이트 통계)
 resource "aws_apigatewayv2_integration" "get_site_stats" {
-  api_id             = aws_apigatewayv2_api.main.id
-  integration_type   = "AWS_PROXY"
-  integration_uri    = var.get_site_stats_invoke_arn
+  api_id                 = aws_apigatewayv2_api.main.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = var.get_site_stats_invoke_arn
   payload_format_version = "2.0"
 }
 
