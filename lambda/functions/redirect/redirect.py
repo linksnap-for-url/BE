@@ -2,6 +2,7 @@ import json
 import boto3
 import os
 import uuid
+import urllib.request
 from datetime import datetime
 
 dynamodb = boto3.resource('dynamodb')
@@ -9,9 +10,45 @@ urls_table = dynamodb.Table(os.environ.get('URLS_TABLE', 'url-shortener-urls-dev
 stats_table = dynamodb.Table(os.environ.get('STATS_TABLE', 'url-shortener-stats-dev'))
 
 
+def get_country_from_ip(ip):
+    """IP 주소로 국가 코드 조회 (무료 API 사용)"""
+    try:
+        if not ip or ip == 'unknown' or ip.startswith('127.') or ip.startswith('10.'):
+            return 'unknown'
+        
+        # ip-api.com API 
+        url = f"http://ip-api.com/json/{ip}?fields=countryCode"
+        req = urllib.request.Request(url, headers={'User-Agent': 'LinkSnap/1.0'})
+        
+        with urllib.request.urlopen(req, timeout=2) as response:
+            data = json.loads(response.read().decode())
+            return data.get('countryCode', 'unknown')
+    except Exception:
+        return 'unknown'
+
+
+def get_client_ip(event):
+    """클라이언트 IP 주소 추출"""
+    headers = event.get('headers', {}) or {}
+    
+    # API Gateway에서 전달하는 IP 헤더들 확인
+    ip = (
+        headers.get('x-forwarded-for', '').split(',')[0].strip() or
+        headers.get('x-real-ip', '') or
+        event.get('requestContext', {}).get('http', {}).get('sourceIp', '') or
+        event.get('requestContext', {}).get('identity', {}).get('sourceIp', '') or
+        'unknown'
+    )
+    return ip
+
+
 def record_click(short_code, event):
     """클릭 통계 기록"""
     headers = event.get('headers', {}) or {}
+    
+    # 클라이언트 IP에서 국가 조회
+    client_ip = get_client_ip(event)
+    country = headers.get('cloudfront-viewer-country') or get_country_from_ip(client_ip)
     
     # stats 테이블에 저장
     stats_table.put_item(
@@ -20,7 +57,8 @@ def record_click(short_code, event):
             'timestamp': datetime.utcnow().isoformat(),
             'userAgent': headers.get('user-agent', 'unknown'),
             'referer': headers.get('referer', 'direct'),
-            'country': headers.get('cloudfront-viewer-country', 'unknown')
+            'country': country,
+            'ip': client_ip  # 디버깅용 (필요 없으면 제거)
         }
     )
     
