@@ -29,9 +29,3 @@ variable "stats_table_name" {
   type        = string
   default     = ""
 }
-
-variable "sagemaker_endpoint" {
-  description = "SageMaker Endpoint 이름 (없으면 빈 문자열)"
-  type        = string
-  default     = ""
-}
