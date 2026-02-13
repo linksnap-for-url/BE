@@ -50,24 +50,27 @@ def record_click(short_code, event):
     client_ip = get_client_ip(event)
     country = headers.get('cloudfront-viewer-country') or get_country_from_ip(client_ip)
     
-    # stats 테이블에 저장
-    stats_table.put_item(
-        Item={
-            'statsId': f"{short_code}#{uuid.uuid4()}",
-            'timestamp': datetime.utcnow().isoformat(),
-            'userAgent': headers.get('user-agent', 'unknown'),
-            'referer': headers.get('referer', 'direct'),
-            'country': country,
-            'ip': client_ip  # 디버깅용 (필요 없으면 제거)
-        }
-    )
-    
-    # url 테이블 클릭 카운트 증가
+    # url 테이블 클릭 카운트 증가 (가장 중요 — 먼저 실행)
     urls_table.update_item(
         Key={'urlId': short_code},
         UpdateExpression='SET clickCount = if_not_exists(clickCount, :zero) + :inc',
         ExpressionAttributeValues={':inc': 1, ':zero': 0}
     )
+    
+    # stats 테이블에 상세 클릭 로그 저장 (실패해도 리다이렉트는 정상 처리)
+    try:
+        stats_table.put_item(
+            Item={
+                'statsId': f"{short_code}#{uuid.uuid4()}",
+                'timestamp': datetime.utcnow().isoformat(),
+                'userAgent': headers.get('user-agent', 'unknown'),
+                'referer': headers.get('referer', 'direct'),
+                'country': country,
+                'ip': client_ip
+            }
+        )
+    except Exception as e:
+        print(f"[WARN] stats 테이블 기록 실패 (shortCode={short_code}): {e}")
 
 
 def handler(event, context):

@@ -43,7 +43,10 @@ def handler(event, context):
         all_urls = get_all_urls()
         total_urls = len(all_urls)
         
-        # 2. 인기 URL (클릭수 기준 상위 10개)
+        # 2. 전체 클릭 수 = urls 테이블의 clickCount 합산 (atomic counter 기준, 가장 정확)
+        total_clicks = sum(int(url.get('clickCount', 0)) for url in all_urls)
+        
+        # 3. 인기 URL (클릭수 기준 상위 10개)
         popular_urls = sorted(
             all_urls,
             key=lambda x: int(x.get('clickCount', 0)),
@@ -61,11 +64,9 @@ def handler(event, context):
             for url in popular_urls
         ]
         
-        # 3. 전체 클릭 통계
+        # 4. 오늘/어제 클릭 수 (stats 테이블에서 timestamp 기반 집계)
         all_clicks = get_all_clicks()
-        total_clicks = len(all_clicks)
         
-        # 4. 오늘/어제 클릭 수
         now = datetime.utcnow()
         today = now.date()
         yesterday = today - timedelta(days=1)
@@ -104,7 +105,25 @@ def handler(event, context):
             for url in recent_urls
         ]
         
-        # 6. 응답
+        # 6. 전체 URL 목록 (드롭다운/선택용, 클릭수 내림차순)
+        all_urls_sorted = sorted(
+            all_urls,
+            key=lambda x: int(x.get('clickCount', 0)),
+            reverse=True
+        )
+        
+        all_urls_list = [
+            {
+                'urlId': url.get('urlId'),
+                'shortUrl': url.get('shortUrl'),
+                'originalUrl': url.get('originalUrl'),
+                'clickCount': int(url.get('clickCount', 0)),
+                'createdAt': url.get('createdAt')
+            }
+            for url in all_urls_sorted
+        ]
+        
+        # 7. 응답
         return {
             'statusCode': 200,
             'headers': {
@@ -117,7 +136,8 @@ def handler(event, context):
                 'todayClicks': today_clicks,
                 'yesterdayClicks': yesterday_clicks,
                 'popularUrls': popular_urls_list,
-                'recentUrls': recent_urls_list
+                'recentUrls': recent_urls_list,
+                'allUrls': all_urls_list
             })
         }
         

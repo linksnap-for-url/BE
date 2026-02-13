@@ -36,24 +36,24 @@ def get_realtime_stats_from_dynamodb():
     try:
         urls_table = dynamodb.Table(URLS_TABLE)
         stats_table = dynamodb.Table(STATS_TABLE)
-
+        
         urls_response = urls_table.scan()
         urls = urls_response.get('Items', [])
-
+        
         stats_response = stats_table.scan()
         stats = stats_response.get('Items', [])
-
+        
         referer_counts = {}
         device_counts = {}
         country_counts = {}
         hourly_counts = {str(h): 0 for h in range(24)}
-
+        
         for stat in stats:
             referer = stat.get('referer', 'direct')
             if referer in ['direct', 'unknown', '']:
                 referer = 'direct'
             referer_counts[referer] = referer_counts.get(referer, 0) + 1
-
+            
             ua = stat.get('userAgent', '').lower()
             if 'mobile' in ua or 'android' in ua or 'iphone' in ua:
                 device = 'mobile'
@@ -62,7 +62,7 @@ def get_realtime_stats_from_dynamodb():
             else:
                 device = 'desktop'
             device_counts[device] = device_counts.get(device, 0) + 1
-
+            
             country = stat.get('country', 'unknown')
             country_counts[country] = country_counts.get(country, 0) + 1
 
@@ -73,7 +73,7 @@ def get_realtime_stats_from_dynamodb():
                     hourly_counts[str(hour)] = hourly_counts.get(str(hour), 0) + 1
                 except:
                     pass
-
+        
         return decimal_to_float({
             'total_urls': len(urls),
             'total_clicks': len(stats),
@@ -100,14 +100,14 @@ def invoke_bedrock(prompt):
             }
         ]
     })
-
+    
     response = bedrock.invoke_model(
         modelId=BEDROCK_MODEL,
         body=body,
         contentType='application/json',
         accept='application/json'
     )
-
+    
     result = json.loads(response['body'].read())
     return result['content'][0]['text']
 
@@ -164,10 +164,10 @@ def build_full_prompt(realtime_data):
 def build_traffic_prompt(realtime_data):
     """트래픽 패턴 분석 프롬프트"""
     hourly = realtime_data.get('hourly_distribution', {})
-
+    
     peak_hour = max(hourly.items(), key=lambda x: x[1]) if hourly else ('12', 0)
     low_hour = min(hourly.items(), key=lambda x: x[1]) if hourly else ('3', 0)
-
+    
     prompt = f"""
 당신은 마케팅 데이터 분석 전문가입니다. 다음 URL 단축 서비스의 트래픽 데이터를 분석해주세요.
 
@@ -255,7 +255,7 @@ def handler(event, context):
         body = event.get('body', '{}')
         if isinstance(body, str):
             body = json.loads(body) if body else {}
-
+        
         analysis_type = body.get('type', 'full')
 
         # 2. DynamoDB에서 실시간 데이터 수집
@@ -264,7 +264,7 @@ def handler(event, context):
             'referer_distribution': {}, 'device_distribution': {},
             'country_distribution': {}, 'hourly_distribution': {}
         }
-
+        
         # 3. 분석 타입별 프롬프트 생성
         if analysis_type == 'traffic':
             prompt = build_traffic_prompt(realtime_data)
@@ -272,10 +272,10 @@ def handler(event, context):
             prompt = build_conversion_prompt(realtime_data)
         else:  # full
             prompt = build_full_prompt(realtime_data)
-
+        
         # 4. Bedrock 호출
         ai_response = invoke_bedrock(prompt)
-
+        
         # 5. 응답 반환
         response_body = {
             'analysis_type': analysis_type,
@@ -310,7 +310,7 @@ def handler(event, context):
             },
             'body': json.dumps(response_body, ensure_ascii=False)
         }
-
+        
     except Exception as e:
         import traceback
         return {

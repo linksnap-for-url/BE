@@ -153,6 +153,10 @@ def handler(event, context):
         # 4. 통계 계산
         stats = calculate_stats(click_items)
         
+        # urls 테이블의 clickCount(atomic counter)를 정식 totalClicks로 사용
+        url_click_count = int(url_item.get('clickCount', 0))
+        stats['totalClicks'] = url_click_count
+        
         # 5. 응답
         return {
             'statusCode': 200,
