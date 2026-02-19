@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: linksnap-api
+  namespace: linksnap
+  labels:
+    app: linksnap-api
+spec:
+  type: ClusterIP
+  selector:
+    app: linksnap-api
+  ports:
+    - port: 80
+      targetPort: 8000
+      protocol: TCP

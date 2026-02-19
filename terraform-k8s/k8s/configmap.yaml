@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: linksnap-config
+  namespace: linksnap
+data:
+  AWS_REGION: "ap-northeast-2"
+  URLS_TABLE: "url-shortener-urls-dev"
+  STATS_TABLE: "url-shortener-stats-dev"
+  BASE_URL: "https://shmall.store"

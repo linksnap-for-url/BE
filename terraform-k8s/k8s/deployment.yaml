@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linksnap-api
+  namespace: linksnap
+  labels:
+    app: linksnap-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: linksnap-api
+  template:
+    metadata:
+      labels:
+        app: linksnap-api
+    spec:
+      containers:
+        - name: linksnap-api
+          image: IMAGE_PLACEHOLDER
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: linksnap-config
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 30
