@@ -4,7 +4,7 @@ AWS 기반 서버리스 URL 단축 서비스
 
 Terraform으로 인프라를 관리하며 Lambda + API Gateway + DynamoDB 아키텍처와 EKS k8s 클러스터를 병행 운영합니다.
 
----
+
 
 ### 1. 아키텍처 구성도
 
@@ -20,7 +20,7 @@ Terraform으로 인프라를 관리하며 Lambda + API Gateway + DynamoDB 아키
 [Bedrock Claude 3 Haiku] → [AI Insights API]
 ```
 
----
+
 
 ### 2. 기술 스택
 
@@ -37,7 +37,7 @@ Terraform으로 인프라를 관리하며 Lambda + API Gateway + DynamoDB 아키
 | Container | ECR, EKS, Docker |
 | K8s 시각화 | kube-ops-view |
 
----
+
 
 ### 3. API 엔드포인트
 
@@ -60,7 +60,7 @@ Base URL: `https://shmall.store`
 
 분석 타입: `full`, `traffic`, `conversion`
 
----
+
 
 ### 4. 인프라 분리 전략
 
@@ -73,83 +73,33 @@ Base URL: `https://shmall.store`
 | `terraform-k8s/` | EKS 클러스터 | 필요 시 apply/destroy | 사용 시간 기반 |
 
 
----
+
 
 ### 5. EKS Kubernetes 구성
 
-5.1 클러스터 사양
-
-| 항목 | 설정 |
+| 5.1 클러스터 사양 | 5.2 K8s 리소스 |
 |---|---|
-| EKS 버전 | 1.29 |
-| 노드 타입 | t3.small (2 vCPU, 2GB RAM) |
-| 노드 수 | min 1 / desired 2 / max 3 |
-| 네트워크 | VPC + Public/Private Subnet 2개씩 |
-| 이미지 저장소 | ECR (최근 5개 이미지만 유지) |
+| <table><tr><th>항목</th><th>설정</th></tr><tr><td>EKS 버전</td><td>1.29</td></tr><tr><td>노드 타입</td><td>t3.small (2 vCPU, 2GB)</td></tr><tr><td>노드 수</td><td>min 1 / desired 2 / max 3</td></tr><tr><td>네트워크</td><td>VPC + Subnet 2개씩</td></tr><tr><td>이미지 저장소</td><td>ECR (최근 5개 유지)</td></tr></table> | <table><tr><th>리소스</th><th>설명</th></tr><tr><td>Namespace</td><td>linksnap - 리소스 격리</td></tr><tr><td>ConfigMap</td><td>DynamoDB, 리전 환경변수</td></tr><tr><td>Deployment</td><td>FastAPI Pod 2개</td></tr><tr><td>Service</td><td>ClusterIP (내부 네트워크)</td></tr><tr><td>Ingress</td><td>ALB 연동</td></tr><tr><td>HPA</td><td>CPU 70% 초과 시 자동 확장</td></tr></table> |
 
-5.2 K8s 리소스
-
-| 리소스 | 설명 |
+| 5.3 컨테이너 앱 | 5.4 kube-ops-view 시각화 |
 |---|---|
-| Namespace | `linksnap` - 리소스 격리 |
-| ConfigMap | DynamoDB 테이블명, AWS 리전 등 환경변수 |
-| Deployment | FastAPI Pod 2개 (replicas: 2) |
-| Service | ClusterIP (내부 네트워크) |
-| Ingress | ALB 연동 (외부 트래픽 라우팅) |
-| HPA | CPU 70% 초과 시 Pod 자동 확장 (max 5) |
+| Lambda 4개를 FastAPI 1개로 통합 <table><tr><th>Lambda</th><th>엔드포인트</th></tr><tr><td>shorten_url.py</td><td>POST /shorten</td></tr><tr><td>redirect.py</td><td>GET /{shortCode}</td></tr><tr><td>get_site_stats.py</td><td>GET /stats</td></tr><tr><td>get_url_stats.py</td><td>GET /stats/{shortCode}</td></tr><tr><td>test용</td><td>GET /health</td></tr></table> | 노드와 Pod 배치를 시각적으로 모니터링 <br/><img src="./docs/images/kube-ops.png" width="400" /> |
 
-5.3 컨테이너 앱
 
-Lambda 함수 4개를 FastAPI 서버 1개로 통합하여 컨테이너화
-
-| Lambda 함수 | FastAPI 엔드포인트 |
-|---|---|
-| shorten_url.py | POST /shorten |
-| redirect.py | GET /{shortCode} |
-| get_site_stats.py | GET /stats |
-| get_url_stats.py | GET /stats/{shortCode} |
-| test용 | GET /health |
-
-5.4 kube-ops-view 시각화
-
-kube-ops-view를 통해 노드와 Pod 배치를 시각적으로 모니터링.
-
-<img src="./docs/images/kube-ops.png" width="500" />
-
----
 
 ### 6. CloudWatch 모니터링 + Discord 알람
 
-6.1 대시보드 구성
-
-<img src="./docs/images/cloudwatch.png" width="500" />
-
-| 위젯 | 내용 |
+| 6.1 대시보드 구성 | |
 |---|---|
-| Lambda Invocations / Errors / Duration | 메트릭 그래프 |
-| Alarm Status | 알람 상태 표시 |
-| 함수별 Error Logs | 에러/예외 로그 테이블 |
-| 함수별 Recent Logs | 최근 로그 테이블 |
-| Redirect / Stats Failure Logs | 리다이렉트 상세 로그 |
-| Cold Start / Execution Report | 성능 분석 로그 |
+| <table><tr><th>위젯</th><th>내용</th></tr><tr><td>Invocations / Errors / Duration</td><td>메트릭 그래프</td></tr><tr><td>Alarm Status</td><td>알람 상태 표시</td></tr><tr><td>함수별 Error Logs</td><td>에러/예외 로그</td></tr><tr><td>함수별 Recent Logs</td><td>최근 로그</td></tr><tr><td>Redirect / Stats Failure</td><td>리다이렉트 상세 로그</td></tr><tr><td>Cold Start / Execution Report</td><td>성능 분석 로그</td></tr></table> | <img src="./docs/images/cloudwatch.png" width="400" /> |
 
-6.2 알람 → Discord 알림
+| 6.2 알람 → Discord 알림 | |
+|---|---|
+| <table><tr><th>알람</th><th>조건</th><th>임계값</th></tr><tr><td>Lambda 에러</td><td>5분간 에러 수 초과</td><td>5회</td></tr><tr><td>Lambda 실행시간</td><td>5분간 평균 초과</td><td>5,000ms</td></tr><tr><td>Lambda 스로틀</td><td>스로틀 발생</td><td>1회</td></tr><tr><td>API 5XX 에러</td><td>5분간 5XX 초과</td><td>10회</td></tr><tr><td>API 4XX 에러</td><td>5분간 4XX 초과</td><td>50회</td></tr><tr><td>API 지연시간</td><td>5분간 평균 초과</td><td>3,000ms</td></tr><tr><td>로그 에러 감지</td><td>ERROR/Exception 로그</td><td>3회</td></tr></table> | <img src="./docs/images/discord.png" width="400" /> |
 
-| 알람 | 조건 | 기본 임계값 |
-|---|---|---|
-| Lambda 에러 | 5분간 에러 수 초과 | 5회 |
-| Lambda 실행시간 | 5분간 평균 초과 | 5,000ms |
-| Lambda 스로틀 | 스로틀 발생 | 1회 |
-| API 5XX 에러 | 5분간 5XX 초과 | 10회 |
-| API 4XX 에러 | 5분간 4XX 초과 | 50회 |
-| API 지연시간 | 5분간 평균 초과 | 3,000ms |
-| 로그 에러 감지 | 5분간 ERROR/Exception 로그 | 3회 |
 
-<img src="./docs/images/discord.png" width="500" />
 
----
-
-### 8. 스크린샷
+### 7. 스크린샷
 
 | 메인 페이지 | CloudWatch 대시보드 1 |
 |---|---|
