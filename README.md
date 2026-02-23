@@ -101,11 +101,11 @@ Base URL: `https://shmall.store`
 
 ### 7. 스크린샷
 
-| 메인 페이지 | CloudWatch 대시보드 1 |
+| 메인 페이지 | 대시보드 1 |
 |---|---|
 | <img src="./docs/images/main.png" width="400" /> | <img src="./docs/images/dashboard1.png" width="400" /> |
 
-| CloudWatch 대시보드 2 | AI 인사이트 |
+| 대시보드 2 | AI 인사이트 |
 |---|---|
 | <img src="./docs/images/dashboard2.png" width="400" /> | <img src="./docs/images/ai.png" width="400" /> |
 
